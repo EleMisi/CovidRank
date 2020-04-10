@@ -1,5 +1,6 @@
 import ranking.{InDegreeRank, RankingAlgorithm}
-import utils.FileUtils
+import utils.{FileUtils, VisualizationUtils}
+
 
 object Main {
 
@@ -10,6 +11,6 @@ object Main {
         val r : RankingAlgorithm = new InDegreeRank
         println(nodes)
         println(edgesList)
-        println(r.rank(edgesList))
+        VisualizationUtils.printTopK(r.rank(edgesList), nodes)
     }
 }
