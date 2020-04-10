@@ -1,3 +1,4 @@
+import ranking.{InDegreeRank, RankingAlgorithm}
 import utils.FileUtils
 
 object Main {
@@ -6,8 +7,9 @@ object Main {
         val graphFilePath = "data/citations_500.txt"
         val edgesList = FileUtils.loadGraphFromFile(graphFilePath)
         val nodes = FileUtils.loadNodesFromFile(graphFilePath)
-        println(edgesList)
+        val r : RankingAlgorithm = new InDegreeRank
         println(nodes)
+        println(edgesList)
+        println(r.rank(edgesList))
     }
-
 }
