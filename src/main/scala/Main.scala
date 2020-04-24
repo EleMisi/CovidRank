@@ -1,19 +1,20 @@
 import org.apache.spark.{SparkConf, SparkContext}
-import ranking.{DistributedInDegreeRank, InDegreeRank, RankingAlgorithm}
+import ranking.{DistributedInDegreeRank, InDegreeRank, PageRank, RankingAlgorithm}
 import utils.{FileUtils, VisualizationUtils}
 
 
 object Main {
 
-    def performRanking(edgesList: List[(Int, Int)], algorithm: RankingAlgorithm): List[(Int, Float)] = {
+    def performRanking(edgesList: List[(Int, Int)], N: Int, algorithm: RankingAlgorithm): List[(Int, Float)] = {
         algorithm match {
-            case r: InDegreeRank => r.rank(edgesList)
+            case r: InDegreeRank => r.rank(edgesList, N)
+            case r: PageRank => r.rank(edgesList, N)
             case r: DistributedInDegreeRank =>
                 val conf = new SparkConf().setAppName("covidRank").setMaster("local[*]")
                 val sc = new SparkContext(conf)
 
                 val distEdgesList = sc.parallelize(edgesList)
-                r.rank(distEdgesList)
+                r.rank(distEdgesList, N)
         }
     }
 
@@ -22,14 +23,15 @@ object Main {
 
         val edgesList = FileUtils.loadGraphFromFile(graphFilePath)
         val nodes = FileUtils.loadNodesFromFile(graphFilePath)
+        val N: Int = nodes.size
 
-        println("Loaded "+nodes.size+" nodes.")
+        println("Loaded "+N+" nodes.")
         println("Loaded "+edgesList.size+" edges.")
 
-        //val r : RankingAlgorithm = new InDegreeRank
         val r : RankingAlgorithm = new DistributedInDegreeRank
 
-        val ranking = performRanking(edgesList, r)
+
+        val ranking = performRanking(edgesList, N, r)
         VisualizationUtils.printTopK(ranking, nodes)
     }
 }
