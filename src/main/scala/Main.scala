@@ -27,13 +27,16 @@ object Main {
         val edgesList = FileUtils.loadGraphFromFile(graphFilePath)
         val nodes = FileUtils.loadNodesFromFile(graphFilePath)
         val N: Int = nodes.size
+        // PageRank tolerance
+        val prTolerance: Float = 0.00000001f
 
         println("Loaded "+N+" nodes.")
         println("Loaded "+edgesList.size+" edges.")
 
-        val r : RankingAlgorithm = new DistributedPageRank(0.001f)
+        val r : RankingAlgorithm = new DistributedPageRank(tolerance = prTolerance)
         val ranking = performRanking(edgesList, N, r)
 
         VisualizationUtils.printTopK(ranking, nodes)
+        VisualizationUtils.outputHtmlPage("page.html", graphFilePath, ranking, nodes)
     }
 }
