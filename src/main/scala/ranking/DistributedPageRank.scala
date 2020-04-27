@@ -1,6 +1,7 @@
 package ranking
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
 
 import scala.collection.immutable.Map
 import scala.math.abs
@@ -12,6 +13,11 @@ import scala.math.abs
  */
 class DistributedPageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
   type T = RDD[(Int, Int)]
+  var context: SparkContext = null;
+
+  def setContext(sc: SparkContext) = {
+    this.context = sc
+  }
 
   /**
    * Performs ranking of a graph's nodes by using PageRank algorithm.
@@ -23,50 +29,60 @@ class DistributedPageRank(val tolerance: Float = 0f) extends RankingAlgorithm {
       val maxIter : Int = 10
       val damping : Float = 0.85f
 
-      val outEdges: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1))
-        .groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+      val outEdgesTmp: RDD[(Int, Iterable[Int])] = edgesList.map(edge => (edge._2, edge._1)).groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+      val mockEdges = this.context.parallelize((0 until N).map(nodeIndex => (nodeIndex, nodeIndex)).toList)
+      val mockOutEdges = mockEdges.groupBy(edge => edge._2).mapValues(_.map(_._1)).persist()
+      val outEdges = outEdgesTmp.union(mockOutEdges)
+
       var pageRank: RDD[(Int, Float)] = outEdges.mapValues(v => 1f / N).persist()
 
-      // Runs PageRank until convergence.
-      if (tolerance > 0f) {
-          var oldPr: RDD[(Int, Float)] = outEdges.mapValues(v => 10f).persist()
-          var maxDiff: Float = 10f
+    // Runs PageRank until convergence.
+    if (tolerance > 0f) {
+      var oldPr: RDD[(Int, Float)] = outEdges.mapValues(v => 10f).persist()
+      var maxDiff: Float = 10f
 
-          do {
-              oldPr = pageRank
-              val nodeSuccessorsScores = outEdges.join(pageRank)
-                .flatMap {
-                  case (node: Int, (nodeSuccessors: List[Int], rank: Float)) =>
-                    val outDegree = nodeSuccessors.size
-                    nodeSuccessors.map(nodeSuccessor => (nodeSuccessor, rank / outDegree))
-                }
-              pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
-                .mapValues(score => (1 - damping) / N + damping * score)
-
-              maxDiff = pageRank.join(oldPr)
-                  .map {
-                    case (node:Int, (newRank: Float, oldRank: Float)) =>
-                      (abs(newRank - oldRank))
-                  }.max()
-          } while (maxDiff > tolerance)
-      }
-
-      //Runs PageRank for a fixed number of iterations.
-      else {
-          for (t <- 1 to maxIter) {
-              val nodeSuccessorsScores = outEdges.join(pageRank)
-                  .flatMap {
-                      case (node: Int, (nodeSuccessors: List[Int], rank: Float)) =>
-                        val outDegree = nodeSuccessors.size
-                        nodeSuccessors.map(nodeSuccessor => (nodeSuccessor, rank / outDegree))
-                  }
-              pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
-                .mapValues(score => (1 - damping) / N + damping * score)
+      do {
+        oldPr = pageRank
+        val nodeSuccessorsScores = outEdges.join(pageRank)
+          .flatMap {
+            case (node: Int, (nodeSuccessors: List[Int], rank: Float)) =>
+              val outDegree = nodeSuccessors.size
+              nodeSuccessors.map{
+                case (nodeSuccessor: Int) =>
+                  if (nodeSuccessor == node) (nodeSuccessor, 0f)
+                  else (nodeSuccessor, rank / outDegree)
+              }
           }
-      }
+        pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
+          .mapValues(score => (1 - damping) / N + damping * score)
 
-      pageRank.sortBy(- _._2).collect().toList
+        maxDiff = pageRank.join(oldPr)
+          .map {
+            case (node:Int, (newRank: Float, oldRank: Float)) =>
+              (abs(newRank - oldRank))
+          }.max()
+      } while (maxDiff > tolerance)
+    }
+
+    //Runs PageRank for a fixed number of iterations.
+    else {
+      for (t <- 1 to maxIter) {
+        val nodeSuccessorsScores = outEdges.join(pageRank)
+          .flatMap {
+            case (node: Int, (nodeSuccessors: List[Int], rank: Float)) =>
+              val outDegree = nodeSuccessors.size
+              nodeSuccessors.map{
+                case (nodeSuccessor: Int) =>
+                  if (nodeSuccessor == node) (nodeSuccessor, 0f)
+                  else (nodeSuccessor, rank / outDegree)
+              }
+          }
+        pageRank = nodeSuccessorsScores.reduceByKey((x, y) => x + y)
+          .mapValues(score => (1 - damping) / N + damping * score)
+      }
+    }
+
+    pageRank.sortBy(- _._2).collect().toList
   }
 
 }
-
