@@ -12,8 +12,7 @@ class InDegreeRank extends RankingAlgorithm {
     override def rank(edgesList: T, N: Int): List[(Int, Float)] = {
       val inDegreeRank: List[(Int, Float)] = edgesList.groupBy(edge => edge._2)
         .map(edge => (edge._1, edge._2.length.toFloat / edgesList.length ))
-        .toList
-        .sortBy(- _._2)
+        .toList.sortBy(- _._2)
       inDegreeRank
     }
 
