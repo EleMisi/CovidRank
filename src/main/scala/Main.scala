@@ -31,7 +31,7 @@ object Main {
         println("Loaded "+N+" nodes.")
         println("Loaded "+edgesList.size+" edges.")
 
-        val r : RankingAlgorithm = new DistributedPageRank
+        val r : RankingAlgorithm = new DistributedPageRank(0.001f)
         val ranking = performRanking(edgesList, N, r)
 
         VisualizationUtils.printTopK(ranking, nodes)
