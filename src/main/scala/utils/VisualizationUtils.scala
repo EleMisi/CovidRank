@@ -4,6 +4,7 @@ import java.io.{File, FileWriter}
 import org.fusesource.scalate._
 
 import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 
 object VisualizationUtils {
@@ -34,6 +35,11 @@ object VisualizationUtils {
      * */
     def outputHtmlPage(outPath: String, graphPath: String, rank: List[(Int, Float)], nodes: Map[Int, String], k: Int = 10) = {
         // https://scalate.github.io/scalate/documentation/scalate-embedding-guide.html
+
+        val engine = new TemplateEngine
+        val templateFile = Source.fromResource("templates/rank.mustache").mkString
+        val templateSource = TemplateSource.fromText("templates/rank.mustache", templateFile)
+
         val limit = k.min(rank.length)
         // prepare data for template
         val entriesLb = new ListBuffer[Map[String, String]]()
@@ -46,8 +52,7 @@ object VisualizationUtils {
             )
         }
 
-        val engine = new TemplateEngine
-        val output = engine.layout("templates/rank.mustache", Map("graphFilePath" -> graphPath, "rankEntries" -> entriesLb.toList))
+        val output = engine.layout(templateSource, Map("graphFilePath" -> graphPath, "rankEntries" -> entriesLb.toList))
 
         val fileStream = new FileWriter(new File(outPath))
         fileStream.write(output)

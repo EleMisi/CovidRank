@@ -12,31 +12,51 @@ object Main {
             case r: DistributedInDegreeRank =>
                 val conf = new SparkConf().setAppName("covidInDegreeRank").setMaster("local[*]")
                 val sc = new SparkContext(conf)
+                sc.setLogLevel("ERROR")
                 val distEdgesList = sc.parallelize(edgesList)
                 r.rank(distEdgesList, N)
             case r: DistributedPageRank =>
                 val conf = new SparkConf().setAppName("covidPageRank").setMaster("local[*]")
                 val sc = new SparkContext(conf)
+                sc.setLogLevel("ERROR")
                 val distEdgesList = sc.parallelize(edgesList)
+                r.setContext(sc)
                 r.rank(distEdgesList, N)
         }
     }
 
     def main(args: Array[String]): Unit = {
-        val graphFilePath = "data/citations_500.txt"
+        // Parse program arguments
+        val graphFilePath = if (args.length > 0) args(0) else "data/citations_500.txt"
+        val algorithmName = if (args.length > 1) args(1) else "DistributedPageRank"
+        // PageRank tolerance
+        val prTolerance: Float = 0.000000001f
+        // Output parameters
+        val topK: Int = 50
+        val outputFilename: String = "result_%s.html".format(algorithmName)
+        // Pick the ranking algorithm
+        val r : RankingAlgorithm = algorithmName match {
+            case "InDegreeRank" => new InDegreeRank
+            case "PageRank" => new PageRank(tolerance = prTolerance)
+            case "DistributedInDegreeRank" => new DistributedInDegreeRank
+            case "DistributedPageRank" => new DistributedPageRank(tolerance = prTolerance)
+        }
+        // Report algorithm
+        println("Using algorithm "+algorithmName);
+        // Load data
+        println("Loading graph from "+graphFilePath);
         val edgesList = FileUtils.loadGraphFromFile(graphFilePath)
         val nodes = FileUtils.loadNodesFromFile(graphFilePath)
         val N: Int = nodes.size
-        // PageRank tolerance
-        val prTolerance: Float = 0.00000001f
-
+        // Display graph data
         println("Loaded "+N+" nodes.")
         println("Loaded "+edgesList.size+" edges.")
-
-        val r : RankingAlgorithm = new DistributedPageRank(tolerance = prTolerance)
+        // Perform ranking
         val ranking = performRanking(edgesList, N, r)
-
-        VisualizationUtils.printTopK(ranking, nodes)
-        VisualizationUtils.outputHtmlPage("page.html", graphFilePath, ranking, nodes)
+        // Print all the results
+        VisualizationUtils.printTopK(ranking, nodes, k = topK)
+        // Output results to a html page
+        VisualizationUtils.outputHtmlPage(outputFilename, graphFilePath, ranking, nodes, k = topK)
+        println("Saved results in "+outputFilename);
     }
 }
