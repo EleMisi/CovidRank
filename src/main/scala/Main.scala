@@ -1,6 +1,6 @@
 import org.apache.spark.{SparkConf, SparkContext}
 import ranking.{DistributedInDegreeRank, DistributedPageRank, InDegreeRank, PageRank, RankingAlgorithm}
-import utils.{FileUtils, VisualizationUtils}
+import utils.{FileUtils, SparkContextSingleton, VisualizationUtils}
 
 
 object Main {
@@ -10,15 +10,11 @@ object Main {
             case r: InDegreeRank => r.rank(edgesList, N)
             case r: PageRank => r.rank(edgesList, N)
             case r: DistributedInDegreeRank =>
-                val conf = new SparkConf().setAppName("covidInDegreeRank").setMaster("local[*]")
-                val sc = new SparkContext(conf)
-                sc.setLogLevel("ERROR")
+                val sc = SparkContextSingleton.getContext
                 val distEdgesList = sc.parallelize(edgesList)
                 r.rank(distEdgesList, N)
             case r: DistributedPageRank =>
-                val conf = new SparkConf().setAppName("covidPageRank").setMaster("local[*]")
-                val sc = new SparkContext(conf)
-                sc.setLogLevel("ERROR")
+                val sc = SparkContextSingleton.getContext
                 val distEdgesList = sc.parallelize(edgesList)
                 r.setContext(sc)
                 r.rank(distEdgesList, N)
