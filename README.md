@@ -50,8 +50,8 @@ We performed our tests on two different configurations:
 * **AWS**: 2x machines with 4 cores and 16gb memory
 
 In the figures below we report the comparison results on the 5 citations graphs: 
-![Algorithms performance](https://github.com/EleMisi/CovidRank/images/Algorithms_performance.png)
-![Algorithms performance plot](https://github.com/EleMisi/CovidRank/images/Algorithms_performance_thrs.png)
+![Algorithms performances 1](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance.png)
+![Algorithms performances 2](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance_thrs.png)
 
 ### Built With
 
