@@ -53,6 +53,21 @@ In the figures below we report the comparison results on the 5 citations graphs:
 ![Algorithms performances 1](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance.png)
 ![Algorithms performances 2](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance_thrs.png)
 
+As an example, we report the top 10 articles extracted from *citetion_1* using `DistribuitedInDegree`:
+
+Position | Title
+------------ | -------------
+1 | Isolation of a novel coronavirus from a man with pneumonia in Saudi Arabia
+2 | Identification of a novel coronavirus in patients with severe acute respiratory syndrome
+3 | A novel coronavirus associated with severe acute respiratory syndrome
+4 | Coronavirus as a possible cause of severe acute respiratory syndrome
+5 | Characterization of a novel coronavirus associated with severe acute respiratory syndrome
+6 | Angiotensin-converting enzyme 2 is a functional receptor for the SARS coronavirus
+7 | Bats are natural reservoirs of SARS-like coronaviruses
+8 | The molecular biology of coronaviruses
+9 | Global trends in emerging infectious diseases
+10 | A major outbreak of severe acute respiratory syndrome in Hong Kong
+
 ### Built With
 
 * [Scala 2.11.12](https://www.scala-lang.org/)
