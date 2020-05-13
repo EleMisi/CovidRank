@@ -32,7 +32,7 @@ Given the original dataset, we've extracted article names and their citations li
     * Indegree threshold = 10
     * 32,686 nodes
     * 227,433 edges 
-* *ciattion_1*: 
+* *citation_1*: 
     * Indegree threshold = 1 
     * 1,015,682 nodes
     * 1,576,019 edges 
@@ -53,7 +53,7 @@ In the figures below we report the comparison results on the 5 citations graphs:
 ![Algorithms performances 1](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance.png)
 ![Algorithms performances 2](https://github.com/EleMisi/CovidRank/blob/master/images/Algorithms_performance_thrs.png)
 
-As an example, we report the top 10 articles extracted from *citetion_1* using `DistribuitedInDegree`:
+As an example, we report the top 10 articles extracted from *citation_1* using `DistribuitedInDegree`:
 
 Position | Title
 ------------ | -------------
