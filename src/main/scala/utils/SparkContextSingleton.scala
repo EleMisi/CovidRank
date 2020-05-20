@@ -7,7 +7,7 @@ object SparkContextSingleton {
 
     private def initializeContext(): Unit = {
         // create instance
-        val conf = new SparkConf().setAppName("CovidRank")//.setMaster("local[*]")
+        val conf = new SparkConf().setAppName("CovidRank").setMaster("local[*]")
         val sc = new SparkContext(conf)
         sc.setLogLevel("ERROR")
         // configure
